@@ -14,6 +14,9 @@ import subprocess
 import pandas as pd
 from pathlib import Path
 
+# Module imports
+from barseq.exceptions import SampleMapError, ExperimentDirectoryExistsError
+
 __author__ = "Emanuel Burgos"
 __email__ = "eburgos@wisc.edu"
 
@@ -128,6 +131,18 @@ def create_directories(dir_path: Path, force_it: bool):
     dir_path.mkdir(parents=True, exist_ok=True)
     return
 
+def read_sample_map(filename: str) -> dict():
+    """
+    Reads sample map file into a dictionary to rename sample names in barseq run.
+    :param filename:
+    :return sample_map: dict {Old_name: {new_name: Value, Type: Value}}
+    """
+    sample_map = dict()
+    with open(filename, 'r') as f:
+        reader = csv.DictReader(f, delimiter=find_del(filename))
+        for line in reader:
+            sample_map[line['Sample']] = {'Name': line['Name'], 'Type': line['Type']}
+    return sample_map
 
 if __name__ == '__main__':
     pass

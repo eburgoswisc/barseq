@@ -1,41 +1,82 @@
 #!/usr/bin/env python3
 
 """
-Bin executable fro command line usage
+Bin executable for running main barseq
 
 """
 
+import os
 import sys
-import argparse
 import logging
+import argparse
 
 # Module import
-from barseq.main import main
+from barseq.main import BarSeqRun
 
-
-__author__ = "Emanuel Burgos"
-__email__ = "eburgos@wisc.edu"
+__author__ = 'Emanuel Burgos'
+__email__ = 'eburgos@wisc.edu'
 
 # Get logger
-logger = logging.getLogger("barseq")
+logger = logging.getLogger('Barseq')
 
 
-def parse_args(args):
-    if not args:
-        args = ["-h"]
+def parse_args():
     # Parse arguments
     parser = argparse.ArgumentParser('Python software for analyzing barseq data.')
 
-    parser.add_argument("-i", "--input", help="Directory where fastq/fastq.gz files are located.")
+    REQ = parser.add_argument_group('Required')
 
-    parser.add_argument("-b", "--barcodes", help="CSV file with barcodes for genes")
+    REQ.add_argument("-i", "--input",
+                     help="Directory where fastq/fastq.gz files are located.",
+                     required=True)
 
-    parser.add_argument("-e", "--experiment", help="Name for experiment")
+    REQ.add_argument("-b", "--barcodes",
+                     help="CSV file with barcodes for genes",
+                     required=True)
 
-    # Process arguments given
-    args = parser.parse_args(args)
-    return args
+    REQ.add_argument("-e", "--experiment",
+                     help="Name for experiment",
+                     required=True)
+
+    OPT = parser.add_argument_group('Optional')
+
+    OPT.add_argument('-o', "--output-dir",
+                     help='Output directory to place result folders in. '
+                          'If nothing is provided, will use current working directory.',
+                     default=os.getcwd(),
+                     required=False)
+
+    OPT.add_argument('-s', '--sample-map',
+                     help='Tab-delimited or CSV file which specifies new names for samples. '
+                                          'If not given, filenames will be used for columns and analysis step '
+                                          'will be skipped.',
+                     required=False)
+    OPT.add_argument('-f', '--force-it',
+                     help="If some directory or file exists, overwrite everything",
+                     required=False,
+                     action="store_true")
+
+    if not sys.argv[1:]:
+        parser.print_help()
+        sys.exit()
+    return vars(parser.parse_args())
+
+
+def main(args):
+    try:
+
+        barseq_mapping = BarSeqRun(**args)
+        barseq_mapping.run()
+
+    except Exception as e:
+        logger.exception(e)
+        sys.exit(1)
+    return
 
 
 if __name__ == '__main__':
-    main(parse_args(sys.argv[1:]))
+    main(parse_args())
+
+
+
+
