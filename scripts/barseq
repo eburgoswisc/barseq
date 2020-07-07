@@ -12,6 +12,7 @@ import argparse
 
 # Module import
 from barseq.main import BarSeqRun
+from barseq.analysis import BarSeqAnalysis
 
 __author__ = 'Emanuel Burgos'
 __email__ = 'eburgos@wisc.edu'
@@ -67,6 +68,16 @@ def main(args):
 
         barseq_mapping = BarSeqRun(**args)
         barseq_mapping.run()
+
+        if barseq_mapping.sample_map:
+            logger.info("Running Barseq analysis...")
+            barseq_analysis = BarSeqAnalysis(cts_table=barseq_mapping.counts_results_path,
+                                             sample_map=barseq_mapping.sample_map,
+                                             barcodes=barseq_mapping.barcode_dict,
+                                             output_dir=barseq_mapping.output_dir)
+            barseq_analysis.run()
+        else:
+            logger.warning("Sample map file not provided. Skipping analysis pipeline.")
 
     except Exception as e:
         logger.exception(e)
