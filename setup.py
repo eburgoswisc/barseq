@@ -37,7 +37,7 @@ def main():
         author="Emanuel Burgos",
         author_email="eburgos@wisc.edu",
         license="BSD",
-        scripts=glob("bin/*"),
+        scripts=glob("scripts/*"),
         tests_require=["pytest"],
         install_requires=__requirements__,
         packages=find_packages(),
