@@ -18,7 +18,7 @@ __author__ = 'Emanuel Burgos'
 __email__ = 'eburgos@wisc.edu'
 
 # Get logger
-logger = logging.getLogger()
+logger = BarSeqLogger.logger
 
 class BarSeqRun():
     def __init__(self, input: str, barcodes: str, output_dir: str, experiment: str, sample_map: str=None, force_it: bool=False):

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 """
-Script that provides helper functions for package.
+Module that provides helper functions for barseq. Basically for methods that have no home...
 
 """
 
@@ -17,20 +17,15 @@ from pathlib import Path
 # Module imports
 from barseq.exceptions import SampleMapError, ExperimentDirectoryExistsError
 
-__author__ = "Emanuel Burgos"
-__email__ = "eburgos@wisc.edu"
+__author__ = 'Emanuel Burgos'
+__email__ = 'eburgos@wisc.edu'
 
-# Stdout logging
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s - %(levelname)s - %(module)s - %(message)s",
-    datefmt="%Y-%m-%d %H:%M",
-)
-# Get logger
-logger = logging.getLogger("barseq")
+DNA_COMPLEMENT_BASES = {'A': 't', 'G': 'c', 'T': 'a', 'C': 'g'}
+
 
 class Cd:
     """ Context manager for moving between directories. """
+
     def __init__(self, new_path):
         self.new_path = new_path
 
@@ -42,37 +37,42 @@ class Cd:
         os.chdir(self.old_path)
 
 
-def read_barcodes(barcodes_file: Path) -> dict:
-    """
-    Read in barcodes from file
+class BarSeqLogger():
+    # Get logger
+    logger = logging.getLogger('Barseq')
+    logger.setLevel(logging.INFO)
+    # Set up stream handler for stdout
+    FORMATTER = logging.Formatter(datefmt="",
+                                  fmt="[%(asctime)s] %(levelname)s - %(module)s - %(message)s")
 
-    :param barcodes_file: path to csv file with barcodes and gene name
-    :return barcode_dict:
+    # Set up console logger
+    sh = logging.StreamHandler(sys.stderr)
+    sh.setLevel(logging.INFO)
+    sh.setFormatter(FORMATTER)
 
-    barcode_dict = {
-        barcode_1 : {"gene": Gene_1, "count": 0}
-        barcode_2 : {"gene": Gene_2, "count": 0}
-    }
+    logger.addHandler(sh)
+
+    logger.info('Logger initiated')
+
+    @staticmethod
+    def add_file_handler(logfile_path: Path):
+        if not logfile_path.is_file():
+            logfile_path.touch()
+        fh = logging.FileHandler(logfile_path, mode='w')
+        fh.setFormatter(BarSeqLogger.FORMATTER)
+        BarSeqLogger.logger.addHandler(fh)
+
+
+def format_filename(name: str) -> str:
     """
-    # Store barcodes
-    barcode_dict = dict()
-    with open(barcodes_file, "r") as csv_barcode:
-        # Skip Header
-        next(csv_barcode)
-        for line in csv.reader(csv_barcode):
-            # Ignore comments
-            if not line[0].startswith("#"):
-                gene = line[1]
-                barcode = line[0].upper()
-                # Check for duplicate barcode
-                if barcode not in barcode_dict:
-                    barcode_dict[barcode] = {"gene": gene, "count": 0}
-                else:
-                    logger.error(f"Barcode {barcode} already in dictionary.")
-                    raise IOError(f"Duplicate error: {barcode} already in dictionary")
-    # Add _other for barcode that do not match
-    barcode_dict["_other"] = {"gene": "_other", "count": 0}
-    return barcode_dict
+    TAKEN FROM PYINSEQ
+    Converts input into a valid name for file and recording results
+    :param name: Input name
+    :return output: Formatted name
+    """
+    # Strip extension
+    name = "".join(name.split(".")[0])
+    return re.sub(r"(?u)[^-\w]", "", name.strip().replace(" ", "_"))
 
 
 def write_output(sample_dict: dict, barcode_dict: dict, output_path: Path) -> None:
@@ -106,19 +106,6 @@ def write_output(sample_dict: dict, barcode_dict: dict, output_path: Path) -> No
     return
 
 
-def format_filename(name: str) -> str:
-    """
-    Converts input into a valid name for file and recording results
-
-    :param name: Input name
-    :return output: Formatted name
-    """
-    # Strip extension
-    name = "".join(name.split(".")[0])
-    # Taken from Pyinseq software
-    return re.sub(r"(?u)[^-\w]", "", name.strip().replace(" ", "_"))
-
-
 def create_directories(dir_path: Path, force_it: bool):
     """
     Create barseq directories to store results
@@ -130,6 +117,46 @@ def create_directories(dir_path: Path, force_it: bool):
         raise ExperimentDirectoryExistsError(dir_path)
     dir_path.mkdir(parents=True, exist_ok=True)
     return
+
+
+def uncompress_fastq_gz(filename: Path) -> None:
+    """
+    Uncrompresses fastq.gz files using screed module
+    :param filename: path to fastq.gz file
+    :return:
+    """
+    # Check if gz compressed
+    if filename.suffix in ["gz"]:
+        # Build pipe for uncompressed file
+        subprocess.Popen(("gzip", "-dk", filename))
+    return
+
+
+def complement_dna(sequence: str) -> str:
+    """
+    Gives complement sequence of dna string input (5`-> 3`)
+    :param sequence: Sequence to complement
+    :return: complement sequence
+    """
+    for bp, c in DNA_COMPLEMENT_BASES.items():
+        sequence = sequence.replace(bp, c)
+    return sequence.upper()
+
+
+def reverse_barcodes(barcode) -> str:
+    """ Given barcode, returns the reverse"""
+    complement_barcode = complement_dna(barcode)
+    return complement_barcode[::-1]
+
+
+def convert_args_to_paths(args) -> dict:
+    """
+    Converts argparse.Namespace object into a dict of {arg: Path(value)}
+    :param args:
+    :return:
+    """
+    return {arg: Path(value) for arg, value in vars(args).items() if value}
+
 
 def read_sample_map(filename: str) -> dict():
     """
@@ -143,6 +170,21 @@ def read_sample_map(filename: str) -> dict():
         for line in reader:
             sample_map[line['Sample']] = {'Name': line['Name'], 'Type': line['Type']}
     return sample_map
+
+
+def find_del(filename: str) -> str:
+    """
+    Helper for finding delimiter in table file.
+    :param filename:
+    :return:
+    """
+    with open(filename, 'r') as f:
+        line = repr(f.readline())
+        if ',' in line:
+            return ','
+        if '\\t' in line:
+            return '\\t'
+
 
 if __name__ == '__main__':
     pass

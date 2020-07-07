@@ -16,7 +16,7 @@ __author__ = 'Emanuel Burgos'
 __email__ = 'eburgos@wisc.edu'
 
 # Get logger
-logger = logging.getLogger()
+logger = BarSeqLogger.logger
 
 
 def count_barcodes(seq_file: Path, barcode_dict: dict) -> None:

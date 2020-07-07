@@ -11,7 +11,7 @@ __author__ = 'Emanuel Burgos'
 __email__ = 'eburgos@wisc.edu'
 
 # Get logger
-logger = logging.getLogger()
+logger = BarSeqLogger.logger
 
 def read_barcodes(barcodes_file: Path) -> dict:
     """
