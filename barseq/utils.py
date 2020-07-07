@@ -116,16 +116,21 @@ def format_filename(name: str) -> str:
     return re.sub(r"(?u)[^-\w]", "", name.strip().replace(" ", "_"))
 
 
-def create_directories(dir_path: Path, force_it: bool):
+def make_barseq_directories(runner) -> None:
     """
-    Create barseq directories to store results
-    :param dir_path: path to dir
-    :param force_it: bool that forces program to overwrite dir
+    Helper function for creating experiment directories that are
+    used in barseq run.
+
+    :param runner: Run object given in main
     :return:
     """
-    if dir_path.is_dir() and not force_it:
-        raise ExperimentDirectoryExistsError(dir_path)
-    dir_path.mkdir(parents=True, exist_ok=True)
+    error_message =f"Barseq Error: {runner.experiment} directory already exists. Delete or rename {runner.experiment}, or provide new name for barseq run."
+    results_folder = Path("results", runner.experiment)
+    if results_folder.is_dir():
+        logger.error(error_message)
+        sys.exit(1)
+    results_folder.mkdir(parents=True)
+    runner.path = results_folder
     return
 
 
