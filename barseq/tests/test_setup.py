@@ -5,14 +5,14 @@ Script for Pytest setup
 
 """
 
-import pytest
-import shutil
 import os
+import shutil
 from pathlib import Path
 
+import pytest
 
-__author__ = "Emanuel Burgos"
-__email__ = "eburgos@wisc.edu"
+__author__ = 'Emanuel Burgos'
+__email__ = 'eburgos@wisc.edu'
 
 
 @pytest.fixture(scope="session")
@@ -28,7 +28,8 @@ def temp_dir(tmp_path_factory: Path, request):
     tmpdir = tmp_path_factory.mktemp("test")
     # Copy test data into temp directory
     shutil.copytree("barseq/tests/data", tmpdir.joinpath("data"))
-    def get_tmp_path(filename=[]) -> str:
+
+    def get_tmp_path(filename=()) -> str:
         """
         Getter for file path in tmpdir
         :param filename: filename as string
