@@ -5,15 +5,17 @@ Main pipeline for barseq software
 
 """
 
-import os
-from copy import deepcopy
-import sys
 import logging
+from copy import deepcopy
 from pathlib import Path
 
 # Module import
-from .utils import write_output, read_barcodes, format_filename, make_barseq_directories
-from .process_reads import count_barcodes
+from barseq.process_reads import count_barcodes
+from barseq.read_barcodes import read_barcodes
+from barseq.utils import *
+
+__author__ = 'Emanuel Burgos'
+__email__ = 'eburgos@wisc.edu'
 
 
 __author__ = "Emanuel Burgos"
