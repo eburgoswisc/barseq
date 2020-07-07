@@ -5,11 +5,13 @@ Script that provides helper functions for package.
 
 """
 
-import csv
-import pandas as pd
+import os
 import re
-import logging
 import sys
+import csv
+import logging
+import subprocess
+import pandas as pd
 from pathlib import Path
 
 __author__ = "Emanuel Burgos"
@@ -23,6 +25,18 @@ logging.basicConfig(
 )
 # Get logger
 logger = logging.getLogger("barseq")
+
+class Cd:
+    """ Context manager for moving between directories. """
+    def __init__(self, new_path):
+        self.new_path = new_path
+
+    def __enter__(self):
+        self.old_path = os.getcwd()
+        os.chdir(self.new_path)
+
+    def __exit__(self, etype, value, traceback):
+        os.chdir(self.old_path)
 
 
 def read_barcodes(barcodes_file: Path) -> dict:
@@ -58,14 +72,14 @@ def read_barcodes(barcodes_file: Path) -> dict:
     return barcode_dict
 
 
-def write_output(sample_dict: dict, barcode_dict: dict, runner) -> None:
+def write_output(sample_dict: dict, barcode_dict: dict, output_path: Path) -> None:
     """
     Convert results file into a pandas dataframe with following
     structure.
 
     :param sample_dict: Dictionary with samples and barcode counts
     :param barcode_dict: Dictionary with barcode and gene names
-    :param output_name: Name for output file
+    :param output_path: Relative path for new csv file
     :return None
 
     |    Gene    | Barcode |   Sample 1  |  Sample 2   | ... |
@@ -73,21 +87,19 @@ def write_output(sample_dict: dict, barcode_dict: dict, runner) -> None:
     |   Gene 1   | ATCGCGT |     500     |     10      | ... |
 
     """
-    # Grab barcode and gene index
-    index = list(sample_dict.values())[0]
-    s_genes = pd.Series(data=[d["gene"] for d in index.values()], name="Gene")
-    s_barcodes = pd.Series(data=[k for k in index.keys()], name="Barcodes")
-    # Join them
-    df = pd.concat([s_genes, s_barcodes], axis=1).set_index("Gene")
-    # Sort samples
-    sample_dict = dict(sorted(sample_dict.items()))
-    # Grab counts from sample and add to df
-    for sample in sample_dict:
-        counts = {count_dict["gene"]: count_dict["count"] for count_dict in sample_dict[sample].values()}
-        sample_df = pd.DataFrame.from_dict(counts, orient="index", columns=[sample])
-        df = pd.concat([df, sample_df], axis=1)
+    # Barcode index wil be used, gene names will be treated as additional column
+    barcode_index = [barcode for barcode in barcode_dict.keys()]
+    gene_d = {barcode: d['gene'] for barcode, d in barcode_dict.items()}
+
+    df = pd.DataFrame(index=barcode_index).join(pd.DataFrame.from_dict(gene_d, orient='index', columns=['Gene']))
+    df.index.name = 'Barcodes'
+    for (sample, t), count_d in sample_dict.items():
+        sample_count_dict = dict()
+        for barcode, bar_count_d in count_d.items():
+            sample_count_dict[barcode] = bar_count_d['count']
+        df = df.join(pd.DataFrame.from_dict(data=sample_count_dict, orient='index', columns=[sample]))
     # Write to output
-    df.to_csv(f"{runner.path}/barcode_counts_table.csv")
+    df.to_csv(output_path)
     return
 
 

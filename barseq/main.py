@@ -25,19 +25,6 @@ __email__ = "eburgos@wisc.edu"
 logger = logging.getLogger("barseq")
 
 
-class Cd:
-    """ Context manager for moving directories. """
-    def __init__(self, new_path):
-        self.new_path = new_path
-
-    def __enter__(self):
-        self.old_path = os.getcwd()
-        os.chdir(self.new_path)
-
-    def __exit__(self, etype, value, traceback):
-        os.chdir(self.old_path)
-
-
 class Run:
     """ Class that stores settings for barseq processes. """
     def __init__(self, args):
