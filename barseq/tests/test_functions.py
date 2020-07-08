@@ -69,8 +69,8 @@ def test_complement_dna():
 
 def test_read_sample_map():
     sample_map = {
-        'data1': {'New_name': 'Input-1', 'Type': 'Input'},
-        'data2': {'New_name': 'Output-1', 'Type': 'Output'},
-        'data3': {'New_name': 'Output-2', 'Type': 'Output'},
+        'data1': {'Name': 'Input-1', 'Type': 'Input'},
+        'data2': {'Name': 'Output-1', 'Type': 'Output'},
+        'data3': {'Name': 'Output-2', 'Type': 'Output'},
     }
     assert read_sample_map('barseq/tests/data/input/sample_map_test.csv') == sample_map

@@ -15,7 +15,6 @@ __author__ = 'Emanuel Burgos'
 __email__ = 'eburgos@wisc.edu'
 
 
-
 def test_barseq(temp_dir):
     # Create testing paths
     input_sequence = temp_dir(['data', 'input', 'sequences', 'no-index'])
