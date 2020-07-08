@@ -185,6 +185,7 @@ def find_del(filename: str) -> str:
         if '\\t' in line:
             return '\\t'
 
-
+def total_reads(seq_file: Path) -> int:
+    return
 if __name__ == '__main__':
     pass
