@@ -5,6 +5,7 @@ import logging
 from pathlib import Path
 
 # Module import
+from barseq.utils import BarSeqLogger
 from barseq.exceptions import DuplicateBarcodeError
 
 __author__ = 'Emanuel Burgos'

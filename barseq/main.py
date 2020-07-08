@@ -5,9 +5,7 @@ Main pipeline for barseq software
 
 """
 
-import logging
 from copy import deepcopy
-from pathlib import Path
 
 # Module import
 from barseq.process_reads import count_barcodes
@@ -35,7 +33,7 @@ class BarSeqRun():
         create_directories(self.output_dir, force_it)
 
         # Add logfile handler to logger
-        #BarSeqLogger.add_file_handler(self.logfile)
+        BarSeqLogger.add_file_handler(self.logfile)
 
         if sample_map:
             self.sample_map_path = Path(sample_map)

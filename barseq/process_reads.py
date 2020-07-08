@@ -5,12 +5,13 @@ Count barcode frequency in fastq/fasta files given by user.
 
 """
 
-
 import screed
-import logging
 import regex as re
+from tqdm import tqdm
 from pathlib import Path
 
+# Module import
+from barseq.utils import BarSeqLogger
 
 __author__ = 'Emanuel Burgos'
 __email__ = 'eburgos@wisc.edu'
@@ -37,7 +38,7 @@ def count_barcodes(seq_file: Path, barcode_dict: dict) -> None:
     # Open sequence file, require Path
     with screed.open(seq_file) as reads:
         n_reads = 0
-        for read in reads:
+        for read in tqdm(reads, total=1000000):
             try:
                 putative_barcode = re.search(flank_regex, read.sequence)[2]
                 for known_barcode in barcode_regex:

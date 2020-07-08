@@ -37,22 +37,22 @@ class Cd:
         os.chdir(self.old_path)
 
 
-class BarSeqLogger():
+class BarSeqLogger:
     # Get logger
     logger = logging.getLogger('Barseq')
     logger.setLevel(logging.INFO)
     # Set up stream handler for stdout
-    FORMATTER = logging.Formatter(datefmt="",
+    FORMATTER = logging.Formatter(datefmt="%H:%M:%S",
                                   fmt="[%(asctime)s] %(levelname)s - %(module)s - %(message)s")
 
     # Set up console logger
-    sh = logging.StreamHandler(sys.stderr)
+    sh = logging.StreamHandler(sys.stdout)
     sh.setLevel(logging.INFO)
     sh.setFormatter(FORMATTER)
 
     logger.addHandler(sh)
 
-    logger.info('Logger initiated')
+    logger.debug('Logger initiated.')
 
     @staticmethod
     def add_file_handler(logfile_path: Path):
