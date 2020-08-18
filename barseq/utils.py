@@ -93,7 +93,6 @@ def write_output(sample_dict: dict, barcode_dict: dict, output_path: Path) -> No
     # Barcode index wil be used, gene names will be treated as additional column
     barcode_index = [barcode for barcode in barcode_dict.keys()]
     gene_d = {barcode: d['gene'] for barcode, d in barcode_dict.items()}
-
     df = pd.DataFrame(index=barcode_index).join(pd.DataFrame.from_dict(gene_d, orient='index', columns=['Gene']))
     df.index.name = 'Barcodes'
     for (sample, t), count_d in sample_dict.items():
@@ -185,7 +184,24 @@ def find_del(filename: str) -> str:
         if '\\t' in line:
             return '\\t'
 
-def total_reads(seq_file: Path) -> int:
-    return
+def count_reads(seq_file: Path) -> int:
+    """ Counts reads in sequence file """
+    # find absolute path of file, subprocess uses
+    command = ['|', 'wc', '-l']
+    seq_file_abs = seq_file.resolve()
+    # Handle compressed file
+    if seq_file_abs.name.endswith('gz'):
+        command = ['gunzip', '-c', str(seq_file_abs)] + command
+        uncompressed = False
+    else:
+        uncompressed = True
+        command = ['cat', str(seq_file_abs)] + command
+    output = subprocess.run(' '.join(command), shell=True, stdout=subprocess.PIPE)
+    num_reads = int(output.stdout.strip())
+    if uncompressed:
+        return int( (num_reads - 1)/4 )
+    return int(num_reads/4)
+
+
 if __name__ == '__main__':
     pass

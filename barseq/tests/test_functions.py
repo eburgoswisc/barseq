@@ -74,3 +74,8 @@ def test_read_sample_map():
         'data3': {'Name': 'Output-2', 'Type': 'Output'},
     }
     assert read_sample_map('barseq/tests/data/input/sample_map_test.csv') == sample_map
+
+
+def test_count_reads():
+    test_reads_count = count_reads(Path('barseq/tests/data/input/sequences/compressed/data1.fastq.gz'))
+    assert test_reads_count == 125

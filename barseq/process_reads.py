@@ -11,7 +11,7 @@ from tqdm import tqdm
 from pathlib import Path
 
 # Module import
-from barseq.utils import BarSeqLogger
+from barseq.utils import BarSeqLogger, count_reads
 
 __author__ = 'Emanuel Burgos'
 __email__ = 'eburgos@wisc.edu'
@@ -38,7 +38,7 @@ def count_barcodes(seq_file: Path, barcode_dict: dict) -> None:
     # Open sequence file, require Path
     with screed.open(seq_file) as reads:
         n_reads = 0
-        for read in tqdm(reads, total=1000000):
+        for read in tqdm(reads, total=count_reads(seq_file)):
             try:
                 putative_barcode = re.search(flank_regex, read.sequence)[2]
                 for known_barcode in barcode_regex:
