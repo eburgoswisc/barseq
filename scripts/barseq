@@ -12,9 +12,7 @@ import argparse
 
 # Module import
 from barseq.main import BarSeqRun
-from barseq.utils import BarSeqLogger, read_sample_map
 from barseq.analysis import BarSeqAnalysis
-from barseq.read_barcodes import read_barcodes
 
 __author__ = 'Emanuel Burgos'
 __email__ = 'eburgos@wisc.edu'
@@ -69,17 +67,13 @@ def main(args):
     try:
 
         barseq_mapping = BarSeqRun(**args)
-        #barseq_mapping.run()
+        barseq_mapping.run()
 
         if barseq_mapping.sample_map_path:
             logger.info("Running Barseq analysis...")
-            # barseq_analysis = BarSeqAnalysis(cts_table=barseq_mapping.counts_results_path,
-            #                                  sample_map=barseq_mapping.sample_map,
-            #                                  barcodes=barseq_mapping.barcode_dict,
-            #                                  output_dir=barseq_mapping.output_dir)
             barseq_analysis = BarSeqAnalysis(cts_table=barseq_mapping.counts_results_path,
-                                             sample_map=read_sample_map(barseq_mapping.sample_map_path),
-                                             barcodes=read_barcodes(barseq_mapping.barcodes_path),
+                                             sample_map=barseq_mapping.sample_map,
+                                             barcodes=barseq_mapping.barcode_dict,
                                              output_dir=barseq_mapping.output_dir)
             barseq_analysis.run()
         else:

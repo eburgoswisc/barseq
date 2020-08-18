@@ -21,6 +21,8 @@ logger = BarSeqLogger.logger
 class BarSeqRun():
     def __init__(self, input: str, barcodes: str, output_dir: str, experiment: str, sample_map: str=None, force_it: bool=False):
 
+        logger.info("***** Starting barseq *****")
+
         self.program = 'BarSeq'
         self.experiment = experiment
         self.sequence_dir = Path(input)
@@ -37,17 +39,29 @@ class BarSeqRun():
 
         if sample_map:
             self.sample_map_path = Path(sample_map)
+            self.sample_map = read_sample_map(self.sample_map_path)
 
+        logger.info(f"Reading in barcodes from {self.barcodes_path.name}")
+        self.barcode_dict = read_barcodes(self.barcodes_path)
+        self.barcode_count_samples_dict = dict()
 
+        logger.info(f"Collecting sequence files from {self.sequence_dir}")
+        self.get_sequence_files()
 
     def get_sequence_files(self):
-        """ Gets sequence files relative path and returns list with Path objects
-        :return: list with relative path objects from cwd for sequences
-        """
+        """ Gets sequence files relative path and returns list with Path objects """
+        # Check that sequence dir exists
+        if not self.sequence_dir.exists():
+            raise NotADirectoryError("Sequence directory does not exist.")
         # Relative to cwd Path objects (cwd/sequences/filename.fastq[.gz])
-        return sorted([Path(n) for n in self.sequence_dir.glob('*fastq*')])
+        seq_files = list(self.sequence_dir.glob('*fastq*'))
+        for sample in self.sample_map:
+            f_path = [f for f in seq_files if sample in f.name][0]
+            self.sample_map[sample]['filepath'] = f_path
+        return
 
     def rename_sample_columns(self):
+        """ Rename samples in map using names from user provided file """
         new_barcode_count = dict()
         for sample, d in self.sample_map.items():
             if sample in self.barcode_count_samples_dict.keys():
@@ -56,31 +70,19 @@ class BarSeqRun():
         return
 
     def run(self) -> None:
-        """
-        Main pipeline for analyzing barseq data.
-        """
-        logger.info("***** Starting barseq *****")
-
-        logger.info(f"Collecting sequence files from {self.sequence_dir}")
-        self.sequences_list = self.get_sequence_files()
-
-        logger.info(f"Reading in barcodes from {self.barcodes_path.name}")
-        self.barcode_dict = read_barcodes(self.barcodes_path)
-        self.barcode_count_samples_dict = dict()
-
-        if self.sample_map_path:
-            self.sample_map = read_sample_map(self.sample_map_path)
-
+        """ Main pipeline for analyzing barseq data """
         # Process each sequencing file
-        for seq_file in self.sequences_list:
+        for sample, metadata in self.sample_map.items():
             # Get sample name without suffixes
+            seq_file = metadata['filepath']
             suffixes = ''.join(seq_file.suffixes)
             sample = seq_file.name.replace(suffixes, '')
 
             if 'R2' in seq_file.name.split('_'):
                 logger.warning(f'Skipping {sample} since software does not support paired-end reads yet.')
                 continue
-
+            # Need a newline
+            print()
             logger.info(f"Mapping barcoded reads in {sample}")
             self.barcode_count_samples_dict[sample] = deepcopy(self.barcode_dict)
             # Seq file needs to be just name
