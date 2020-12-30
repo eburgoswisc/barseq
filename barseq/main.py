@@ -94,7 +94,7 @@ def main(args) -> None:
 
     # Write to output
     logger.info(f"Writing results to {runner.path}")
-    write_output(runner.sample_dict, barcodes, runner)
+    write_output(runner.sample_dict, runner)
 
     # Confirm completion of barseq
     logger.info("***** barseq is complete! *****")
