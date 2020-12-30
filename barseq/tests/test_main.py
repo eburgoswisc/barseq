@@ -36,8 +36,6 @@ def test_barseq(temp_dir):
                      "-e", experiment])
     # Check output
     assert filecmp.dircmp(expected_output, test_output)
-    print(pd.read_table(expected_output.joinpath("barcode_counts_table.txt")))
-    print(pd.read_table(test_output.joinpath("barcode_counts_table.txt")))
     assert filecmp.cmp(expected_output.joinpath("barcode_counts_table.txt"),
                        test_output.joinpath("barcode_counts_table.txt"))
 
