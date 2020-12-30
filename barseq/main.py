@@ -84,7 +84,7 @@ def main(args) -> None:
         if 'R2' in seq_file:
             logger.warning(f'Skipping {seq_file} because program does not handle reversed reads.')
         else:
-            if not seq_file.endswith(".DS_Store"):
+            if seq_file.endswith(".fastq") or seq_file.endswith('fastq.gz'):
                 sample = format_filename(seq_file)
                 logger.info(f"Counting Barcodes in {sample}")
                 runner.sample_dict[sample] = deepcopy(barcodes)
